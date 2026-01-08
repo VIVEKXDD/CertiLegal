@@ -7,15 +7,28 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, BookText, FileText } from "lucide-react";
+import { LayoutDashboard, BookText, Database, Search } from "lucide-react";
+import { useFirebase } from "@/firebase";
 
-const links = [
+const allLinks = [
   { href: "/dashboard", label: "My Documents", icon: LayoutDashboard },
+  { href: "/search", label: "Search", icon: Search },
   { href: "/glossary", label: "Glossary", icon: BookText },
+  { href: "/admin", label: "Admin", icon: Database, adminOnly: true },
 ];
+
+const ADMIN_EMAIL = 'v@example.com';
 
 export function MainNav() {
   const pathname = usePathname();
+  const { user } = useFirebase();
+
+  const links = allLinks.filter(link => {
+    if (link.adminOnly) {
+      return user?.email === ADMIN_EMAIL;
+    }
+    return true;
+  });
 
   return (
     <SidebarMenu>

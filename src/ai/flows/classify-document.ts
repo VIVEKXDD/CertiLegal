@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -52,6 +53,7 @@ const prompt = ai.definePrompt({
   name: 'classifyDocumentPrompt',
   input: {schema: ClassifyDocumentInputSchema},
   output: {schema: ClassifyDocumentOutputSchema},
+  model: 'googleai/gemini-2.5-flash',
   prompt: `You are a legal document classification expert. Analyze the following document text and determine its most likely category from the provided list.
 
   Provide a confidence score for your classification and a brief reasoning based on keywords or clauses you identified.

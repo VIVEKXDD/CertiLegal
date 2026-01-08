@@ -12,7 +12,7 @@ import {
 import { MainNav } from "@/components/main-nav";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { CircleUser, LogOut } from "lucide-react";
+import { CircleUser, LogOut, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { getAuth, signOut } from "firebase/auth";
 import { useEffect } from "react";
 import { FirebaseClientProvider } from "@/firebase";
+import Link from "next/link";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useFirebase();
@@ -91,8 +92,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>Profile</DropdownMenuItem>
-              <DropdownMenuItem disabled>Settings</DropdownMenuItem>
+              <Link href="/settings" passHref>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />

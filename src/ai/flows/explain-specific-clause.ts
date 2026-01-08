@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -40,6 +41,7 @@ const prompt = ai.definePrompt({
   name: 'explainSpecificClausePrompt',
   input: {schema: ExplainSpecificClauseInputSchema},
   output: {schema: ExplainSpecificClauseOutputSchema},
+  model: 'googleai/gemini-2.5-flash',
   prompt: `You are an expert legal professional skilled at explaining complex legal jargon in plain, easy-to-understand language. A user has provided a legal document and has selected a specific clause they want explained. Your task is to provide a clear and concise explanation of the clause, its meaning, and its implications, without using legal jargon.
 
 Legal Document:

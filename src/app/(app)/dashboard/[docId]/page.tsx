@@ -20,6 +20,11 @@ interface DocumentData {
   userId: string;
 }
 
+interface DisplayDocumentData extends Omit<DocumentData, 'lastUpdated'> {
+  id: string;
+  lastUpdated: string;
+}
+
 // Define the possible states for the page
 type PageState = 'loading' | 'success' | 'unauthorized' | 'not-found';
 
@@ -29,7 +34,7 @@ export default function DocumentPage() {
   const { firestore, user, isUserLoading } = useFirebase();
 
   const [pageState, setPageState] = useState<PageState>('loading');
-  const [document, setDocument] = useState<DocumentData | null>(null);
+  const [document, setDocument] = useState<DisplayDocumentData | null>(null);
 
   useEffect(() => {
     // This effect runs when auth state or the document ID changes.
@@ -61,7 +66,18 @@ export default function DocumentPage() {
           // 4. Document exists. Now perform the security check on the client.
           // Is the logged-in user the owner, OR are they the special admin user?
           if (docData.userId === user.uid || user.email === 'v@example.com') {
-            setDocument(docData);
+             const displayDoc: DisplayDocumentData = {
+              ...docData,
+              id: docSnap.id,
+              lastUpdated: docData.lastUpdated?.toDate
+                ? docData.lastUpdated.toDate().toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  }) 
+                : 'N/A',
+            };
+            setDocument(displayDoc);
             setPageState('success');
           } else {
             // Document exists, but user is not the owner.
@@ -133,27 +149,15 @@ export default function DocumentPage() {
   }
 
   if (pageState === 'success' && document) {
-    const displayDocument = {
-      ...document,
-      id: docId,
-      lastUpdated: document.lastUpdated?.toDate 
-        ? document.lastUpdated.toDate().toLocaleDateString('en-US', { 
-            month: 'long', 
-            day: 'numeric', 
-            year: 'numeric' 
-          }) 
-        : 'N/A',
-    };
-
     return (
       <div className="grid lg:grid-cols-2 h-full">
         <div className="h-full overflow-y-auto border-r hidden lg:block">
-          <DocumentViewer document={displayDocument} />
+          <DocumentViewer document={document} />
         </div>
         <div className="h-full overflow-y-auto bg-secondary/20">
           <AnalysisTabs 
-            documentText={displayDocument.content} 
-            documentTitle={displayDocument.title} 
+            documentText={document.content} 
+            documentTitle={document.title} 
           />
         </div>
       </div>

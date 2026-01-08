@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -50,6 +51,7 @@ const prompt = ai.definePrompt({
   name: 'identifyPotentialRisksPrompt',
   input: {schema: IdentifyPotentialRisksInputSchema},
   output: {schema: IdentifyPotentialRisksOutputSchema},
+  model: 'googleai/gemini-2.5-flash',
   prompt: `You are an AI legal assistant tasked with identifying potential risks and unfavorable terms in legal documents.
 
   Analyze the following legal document and identify any potential risks or unfavorable terms for the user. Consider the user's specific concerns if provided.

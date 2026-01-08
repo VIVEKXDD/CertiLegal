@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -33,6 +34,7 @@ const prompt = ai.definePrompt({
   name: 'summarizeLegalDocumentPrompt',
   input: {schema: SummarizeLegalDocumentInputSchema},
   output: {schema: SummarizeLegalDocumentOutputSchema},
+  model: 'googleai/gemini-2.5-flash',
   prompt: `You are an expert legal summarizer.  Please provide a concise summary of the legal document provided, highlighting key terms, obligations, and potential risks. The goal is to make the document understandable to a layperson.
 
 Document Text:

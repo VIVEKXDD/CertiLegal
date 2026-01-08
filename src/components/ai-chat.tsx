@@ -6,18 +6,30 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
-import { Send, User, Bot, Loader2 } from 'lucide-react';
+import { Send, User, Bot, Loader2, BookCopy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFirebase } from '@/firebase';
+import { useParams } from 'next/navigation';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Message {
   role: 'user' | 'bot';
   content: string;
+  context?: string[];
 }
 
-export default function AiChat({ documentText }: { documentText: string }) {
+export default function AiChat() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const { user } = useFirebase();
+    const params = useParams();
+    const docId = params.docId as string;
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -34,18 +46,18 @@ export default function AiChat({ documentText }: { documentText: string }) {
         const formData = new FormData(form);
         const question = formData.get('question') as string;
 
-        if (!question.trim()) return;
+        if (!question.trim() || !user) return;
 
         form.reset();
         setMessages(prev => [...prev, { role: 'user', content: question }]);
         setIsLoading(true);
 
-        const result = await getAnswer({ documentText, question });
+        const result = await getAnswer({ documentId: docId, userId: user.uid, question });
         
         if ('error' in result) {
             setMessages(prev => [...prev, { role: 'bot', content: `Error: ${result.error}` }]);
         } else {
-            setMessages(prev => [...prev, { role: 'bot', content: result.answer }]);
+            setMessages(prev => [...prev, { role: 'bot', content: result.answer, context: result.context }]);
         }
         setIsLoading(false);
     };
@@ -54,7 +66,7 @@ export default function AiChat({ documentText }: { documentText: string }) {
         <Card className="h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline">Interactive Q&amp;A</CardTitle>
-                <CardDescription>Ask any question about the document.</CardDescription>
+                <CardDescription>Ask any question about the document. The AI will use semantic search to find relevant clauses first.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
@@ -72,10 +84,29 @@ export default function AiChat({ documentText }: { documentText: string }) {
                             )}>
                                 {message.role === 'bot' && <div className="p-2 rounded-full bg-primary/20 text-primary flex-shrink-0"><Bot className="size-4" /></div>}
                                 <div className={cn(
-                                    'p-3 rounded-lg max-w-md prose prose-sm',
+                                    'p-3 rounded-lg max-w-xl prose prose-sm',
                                     message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-background'
                                 )}>
                                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                    {message.context && message.context.length > 0 && (
+                                        <Accordion type="single" collapsible className="w-full mt-4">
+                                            <AccordionItem value="context">
+                                                <AccordionTrigger className="text-xs text-muted-foreground hover:no-underline">
+                                                    <div className="flex items-center gap-2">
+                                                        <BookCopy className="size-3" />
+                                                        Show Context ({message.context.length} chunks)
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                                                    {message.context.map((chunk, i) => (
+                                                        <blockquote key={i} className="text-xs border-l-2 pl-2 italic text-muted-foreground">
+                                                            {chunk}
+                                                        </blockquote>
+                                                    ))}
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        </Accordion>
+                                    )}
                                 </div>
                                 {message.role === 'user' && <div className="p-2 rounded-full bg-muted flex-shrink-0"><User className="size-4" /></div>}
                             </div>
